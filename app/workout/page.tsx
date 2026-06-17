@@ -58,12 +58,12 @@ export default function WorkoutPage() {
   const [saved, setSaved] = useState(false)
 
   const loadPlans = useCallback(async () => {
-    const { data } = await supabase.from('workout_plans').select('*').eq('user_id', USER_ID).order('created_at')
+    const { data } = await supabase.from('ll_workout_plans').select('*').eq('user_id', USER_ID).order('created_at')
     if (data) setPlans(data as WorkoutPlan[])
   }, [supabase])
 
   const loadHistory = useCallback(async () => {
-    const { data } = await supabase.from('workout_logs').select('*').eq('user_id', USER_ID).order('date', { ascending: false }).limit(50)
+    const { data } = await supabase.from('ll_workout_logs').select('*').eq('user_id', USER_ID).order('date', { ascending: false }).limit(50)
     if (!data) return
     const h: ExHistory[] = []
     const prMap: Record<string, number> = {}
@@ -154,14 +154,14 @@ export default function WorkoutPage() {
       exerciseName: ex.name,
       sets: ex.sets.filter((s) => s.done).map(({ reps, weight }) => ({ reps, weight })),
     }))
-    await supabase.from('workout_logs').insert({
+    await supabase.from('ll_workout_logs').insert({
       user_id: USER_ID,
       date: today,
       plan_id: activeSession.planId,
       plan_name: activeSession.planName,
       sets,
     })
-    await supabase.from('daily_logs').upsert({
+    await supabase.from('ll_daily_logs').upsert({
       user_id: USER_ID,
       date: today,
       workout_completed: true,
@@ -179,7 +179,7 @@ export default function WorkoutPage() {
       id: crypto.randomUUID(),
       ...e,
     }))
-    await supabase.from('workout_plans').insert({
+    await supabase.from('ll_workout_plans').insert({
       user_id: USER_ID,
       name: newPlanName,
       exercises: exs,
@@ -191,7 +191,7 @@ export default function WorkoutPage() {
   }
 
   const deletePlan = async (id: string) => {
-    await supabase.from('workout_plans').delete().eq('id', id)
+    await supabase.from('ll_workout_plans').delete().eq('id', id)
     loadPlans()
   }
 

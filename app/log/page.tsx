@@ -86,7 +86,7 @@ export default function LogPage() {
 
   const loadLog = useCallback(async () => {
     const { data } = await supabase
-      .from('daily_logs')
+      .from('ll_daily_logs')
       .select('*')
       .eq('user_id', USER_ID)
       .eq('date', today)
@@ -113,7 +113,7 @@ export default function LogPage() {
 
   const handleSave = async () => {
     setSaving(true)
-    await supabase.from('daily_logs').upsert({
+    await supabase.from('ll_daily_logs').upsert({
       user_id: USER_ID,
       date: today,
       weight_kg: log.weight_kg ? Number(log.weight_kg) : null,

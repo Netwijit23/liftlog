@@ -40,9 +40,9 @@ export default function ProgressPage() {
 
   const load = useCallback(async () => {
     const [logsRes, wRes] = await Promise.all([
-      supabase.from('daily_logs').select('date,weight_kg,waist_cm,sleep_hours,step_count,calories')
+      supabase.from('ll_daily_logs').select('date,weight_kg,waist_cm,sleep_hours,step_count,calories')
         .eq('user_id', USER_ID).order('date').limit(90),
-      supabase.from('workout_logs').select('date,sets').eq('user_id', USER_ID).order('date').limit(90),
+      supabase.from('ll_workout_logs').select('date,sets').eq('user_id', USER_ID).order('date').limit(90),
     ])
     if (logsRes.data) setLogs(logsRes.data)
     if (wRes.data) setWorkoutLogs(wRes.data)

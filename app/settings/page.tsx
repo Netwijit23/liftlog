@@ -48,7 +48,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false)
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('profile').select('*').eq('user_id', USER_ID).single()
+    const { data } = await supabase.from('ll_profile').select('*').eq('user_id', USER_ID).single()
     if (data) {
       setProfile({
         name: data.name ?? '',
@@ -66,7 +66,7 @@ export default function SettingsPage() {
 
   const handleSave = async () => {
     setSaving(true)
-    await supabase.from('profile').upsert({
+    await supabase.from('ll_profile').upsert({
       user_id: USER_ID,
       name: profile.name || null,
       start_weight: profile.start_weight ? Number(profile.start_weight) : null,

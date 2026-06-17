@@ -39,9 +39,9 @@ export default async function HomePage() {
   const today = new Date().toISOString().split('T')[0]
 
   const [profileRes, todayLogRes, recentLogsRes] = await Promise.all([
-    supabase.from('profile').select('*').eq('user_id', USER_ID).single(),
-    supabase.from('daily_logs').select('*').eq('user_id', USER_ID).eq('date', today).single(),
-    supabase.from('daily_logs').select('date,workout_completed,step_count')
+    supabase.from('ll_profile').select('*').eq('user_id', USER_ID).single(),
+    supabase.from('ll_daily_logs').select('*').eq('user_id', USER_ID).eq('date', today).single(),
+    supabase.from('ll_daily_logs').select('date,workout_completed,step_count')
       .eq('user_id', USER_ID).order('date', { ascending: false }).limit(30),
   ])
 
