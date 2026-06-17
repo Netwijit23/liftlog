@@ -4,13 +4,13 @@ import BottomNav from '@/components/BottomNav'
 import PwaFix from '@/components/PwaFix'
 
 export const metadata: Metadata = {
-  title: 'Liftlog',
-  description: 'Personal fitness tracker',
+  title: 'MomoFit',
+  description: 'Your personal fitness tracker',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Liftlog',
+    title: 'MomoFit',
   },
   formatDetection: { telephone: false },
 }

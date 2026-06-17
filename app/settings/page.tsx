@@ -48,7 +48,7 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false)
 
   const load = useCallback(async () => {
-    const { data } = await supabase.from('ll_profile').select('*').eq('user_id', USER_ID).single()
+    const { data } = await supabase.from('ll_profile').select('*').eq('user_id', USER_ID).maybeSingle()
     if (data) {
       setProfile({
         name: data.name ?? '',

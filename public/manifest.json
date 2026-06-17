@@ -1,7 +1,7 @@
 {
-  "name": "Liftlog",
-  "short_name": "Liftlog",
-  "description": "Personal fitness tracker",
+  "name": "MomoFit",
+  "short_name": "MomoFit",
+  "description": "Your personal fitness tracker",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#FDF2F8",

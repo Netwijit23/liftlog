@@ -841,7 +841,8 @@ const ANIMS: Record<AnimationType, () => JSX.Element> = {
   generic:         GenericAnim,
 }
 
-export default function ExerciseAnimation({ name }: { name: string }) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function ExerciseAnimation({ name, compact }: { name: string; compact?: boolean }) {
   const type = getAnimationType(name)
   const Anim = ANIMS[type]
 

@@ -16,7 +16,7 @@ function ActivityRing({
     <div className="flex flex-col items-center gap-1">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#FCE7F3" strokeWidth={10} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth={10} />
           <circle
             cx={size / 2} cy={size / 2} r={r} fill="none"
             stroke={color} strokeWidth={10}
@@ -25,11 +25,11 @@ function ActivityRing({
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-xs font-bold text-gray-700">{Math.round(pct * 100)}%</span>
+          <span className="text-xs font-bold text-white">{Math.round(pct * 100)}%</span>
         </div>
       </div>
-      <span className="text-xs font-semibold text-gray-500">{label}</span>
-      <span className="text-xs text-gray-400">{value}</span>
+      <span className="text-xs font-bold text-white/80">{label}</span>
+      <span className="text-xs text-white/60">{value}</span>
     </div>
   )
 }
@@ -39,8 +39,8 @@ export default async function HomePage() {
   const today = new Date().toISOString().split('T')[0]
 
   const [profileRes, todayLogRes, recentLogsRes] = await Promise.all([
-    supabase.from('ll_profile').select('*').eq('user_id', USER_ID).single(),
-    supabase.from('ll_daily_logs').select('*').eq('user_id', USER_ID).eq('date', today).single(),
+    supabase.from('ll_profile').select('*').eq('user_id', USER_ID).maybeSingle(),
+    supabase.from('ll_daily_logs').select('*').eq('user_id', USER_ID).eq('date', today).maybeSingle(),
     supabase.from('ll_daily_logs').select('date,workout_completed,step_count')
       .eq('user_id', USER_ID).order('date', { ascending: false }).limit(30),
   ])
@@ -49,7 +49,7 @@ export default async function HomePage() {
   const todayLog = todayLogRes.data
   const recentLogs = recentLogsRes.data ?? []
 
-  const name = profile?.name ?? 'Athlete'
+  const name = profile?.name ?? 'Momo'
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const currentWeight = todayLog?.weight_kg ?? ((recentLogs as any[]).find((l) => l.weight_kg)?.weight_kg ?? null)
   const stepGoal = profile?.step_goal ?? 10000
@@ -72,119 +72,154 @@ export default async function HomePage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="px-4 py-6 space-y-5">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <p className="text-sm text-gray-400 font-medium">{formatDate(new Date())}</p>
-          <h1 className="text-2xl font-bold text-gray-900 mt-0.5">{greeting}, {name} 👋</h1>
-        </div>
-        <div className="w-10 h-10 rounded-full gradient-pink flex items-center justify-center text-white font-bold text-lg shadow-md">
-          {name[0]?.toUpperCase()}
-        </div>
-      </div>
+    <div className="space-y-4">
 
-      {/* Quick stats */}
-      <div className="grid grid-cols-3 gap-3">
-        {[
-          { label: 'Weight', value: currentWeight ? `${currentWeight} kg` : '—', sub: 'current' },
-          { label: 'Streak', value: `${streak}d`, sub: 'days in a row' },
-          { label: 'Workouts', value: workoutsThisWeek.toString(), sub: 'this week' },
-        ].map((s) => (
-          <div key={s.label} className="bg-white rounded-3xl p-4 shadow-pink-sm text-center">
-            <p className="text-2xl font-bold text-gray-900 tracking-tight">{s.value}</p>
-            <p className="text-xs font-semibold text-gray-500 mt-0.5">{s.label}</p>
-            <p className="text-[10px] text-gray-300">{s.sub}</p>
+      {/* ── Hero header ── */}
+      <div className="gradient-hero px-5 pt-10 pb-8 relative overflow-hidden">
+        {/* Decorative circles */}
+        <div className="absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/5" />
+        <div className="absolute top-4 -right-4 w-20 h-20 rounded-full bg-white/5" />
+        <div className="absolute -bottom-6 -left-6 w-28 h-28 rounded-full bg-white/5" />
+
+        {/* Gold sparkles */}
+        <span className="absolute top-6 right-12 text-gold-200 text-sm gold-pulse">✦</span>
+        <span className="absolute top-14 right-6 text-gold-200 text-[10px] gold-pulse" style={{ animationDelay: '0.8s' }}>✦</span>
+        <span className="absolute bottom-8 right-20 text-gold-200 text-xs gold-pulse" style={{ animationDelay: '1.4s' }}>✦</span>
+
+        {/* Brand wordmark */}
+        <div className="flex items-center gap-2 mb-5">
+          {/* MF badge */}
+          <div className="w-9 h-9 rounded-xl gradient-gold flex items-center justify-center shadow-gold-sm">
+            <span className="font-serif font-bold text-white text-sm tracking-tight">MF</span>
           </div>
-        ))}
-      </div>
+          <div>
+            <p className="font-serif font-bold text-white text-lg leading-none tracking-wide">MomoFit</p>
+            <p className="text-[9px] font-bold tracking-[0.18em] text-gold-200 uppercase leading-none mt-0.5">Your Glow Era</p>
+          </div>
+        </div>
 
-      {/* Activity rings */}
-      <div className="bg-white rounded-3xl p-5 shadow-pink-sm">
-        <h2 className="text-sm font-bold text-gray-700 mb-4">Today&apos;s Activity</h2>
-        <div className="flex justify-around">
+        {/* Greeting */}
+        <p className="text-white/70 text-sm font-medium">{formatDate(new Date())}</p>
+        <h1 className="text-2xl font-bold text-white mt-0.5">{greeting}, {name} ✨</h1>
+
+        {/* Activity rings inside hero */}
+        <div className="flex justify-around mt-6 pt-4 border-t border-white/15">
           <ActivityRing
             pct={todayLog?.workout_completed ? 1 : 0}
-            color="#F472B6"
+            color="#FDE68A"
             label="Workout"
-            value={todayLog?.workout_completed ? 'Done' : 'Pending'}
+            value={todayLog?.workout_completed ? 'Done ✓' : 'Pending'}
           />
           <ActivityRing
             pct={todaySteps / stepGoal}
-            color="#E879F9"
+            color="#F9A8D4"
             label="Steps"
-            value={`${todaySteps.toLocaleString()}`}
+            value={todaySteps.toLocaleString()}
           />
           <ActivityRing
             pct={Math.min((todayLog?.sleep_hours ?? 0) / 8, 1)}
-            color="#818CF8"
+            color="#C4B5FD"
             label="Sleep"
             value={todayLog?.sleep_hours ? `${todayLog.sleep_hours}h` : '—'}
           />
         </div>
       </div>
 
-      {/* Today's summary card */}
-      {todayLog && (
-        <div className="bg-white rounded-3xl p-5 shadow-pink-sm">
-          <h2 className="text-sm font-bold text-gray-700 mb-3">Today&apos;s Log</h2>
-          <div className="grid grid-cols-2 gap-3 text-sm">
-            {todayLog.energy_level && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Energy</span>
-                <span className="font-semibold text-gray-800">{todayLog.energy_level}/10</span>
-              </div>
-            )}
-            {todayLog.mood_level && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Mood</span>
-                <span className="font-semibold text-gray-800">{todayLog.mood_level}/10</span>
-              </div>
-            )}
-            {todayLog.calories && (
-              <div className="flex justify-between">
-                <span className="text-gray-400">Calories</span>
-                <span className="font-semibold text-gray-800">{todayLog.calories} kcal</span>
-              </div>
-            )}
-            {todayLog.notes && (
-              <div className="col-span-2">
-                <span className="text-gray-400 block">Notes</span>
-                <span className="font-medium text-gray-700 text-xs">{todayLog.notes}</span>
-              </div>
-            )}
-          </div>
+      {/* ── Body ── */}
+      <div className="px-4 space-y-4">
+
+        {/* Quick stats */}
+        <div className="grid grid-cols-3 gap-3">
+          {[
+            { label: 'Weight', value: currentWeight ? `${currentWeight} kg` : '—', sub: 'current', icon: '⚖️' },
+            { label: 'Streak', value: `${streak}d`, sub: 'days in a row', icon: '🔥' },
+            { label: 'Workouts', value: workoutsThisWeek.toString(), sub: 'this week', icon: '💪' },
+          ].map((s) => (
+            <div key={s.label} className="card-luxury p-4 text-center">
+              <p className="text-lg mb-0.5">{s.icon}</p>
+              <p className="text-xl font-bold text-gray-900 tracking-tight">{s.value}</p>
+              <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide mt-0.5">{s.label}</p>
+            </div>
+          ))}
         </div>
-      )}
 
-      {/* CTA */}
-      <Link
-        href="/log"
-        className="block w-full gradient-pink text-white text-center font-bold text-base py-4 rounded-3xl shadow-lg shadow-pink-md active:scale-95 transition-transform"
-      >
-        {todayLog ? 'Update Today\'s Log' : 'Log Today →'}
-      </Link>
+        {/* CTA */}
+        <Link
+          href="/log"
+          className="block w-full gradient-pink text-white text-center font-bold text-base py-4 rounded-3xl shadow-pink-md active:scale-95 transition-transform relative overflow-hidden"
+        >
+          <span className="relative z-10">
+            {todayLog ? '✏️  Update Today\'s Log' : '📋  Log Today →'}
+          </span>
+        </Link>
 
-      {/* Quick links */}
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/workout" className="bg-white rounded-3xl p-4 shadow-pink-sm flex items-center gap-3 active:scale-95 transition-transform">
-          <div className="w-10 h-10 gradient-pink rounded-2xl flex items-center justify-center">
-            <span className="text-white text-lg">💪</span>
+        {/* Quick links */}
+        <div className="grid grid-cols-2 gap-3">
+          <Link href="/workout" className="card-luxury p-4 flex items-center gap-3 active:scale-95 transition-transform">
+            <div className="w-11 h-11 gradient-pink rounded-2xl flex items-center justify-center shadow-pink-sm flex-shrink-0">
+              <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.2} className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15M8 8l-3.5 4 3.5 4M16 8l3.5 4-3.5 4" />
+              </svg>
+            </div>
+            <div>
+              <p className="font-bold text-gray-900 text-sm">Workout</p>
+              <p className="text-xs text-gray-400">Start session</p>
+            </div>
+          </Link>
+          <Link href="/progress" className="card-luxury p-4 flex items-center gap-3 active:scale-95 transition-transform">
+            <div className="w-11 h-11 gradient-gold rounded-2xl flex items-center justify-center shadow-gold-sm flex-shrink-0">
+              <span className="text-xl">📈</span>
+            </div>
+            <div>
+              <p className="font-bold text-gray-900 text-sm">Progress</p>
+              <p className="text-xs text-gray-400">View charts</p>
+            </div>
+          </Link>
+        </div>
+
+        {/* Today's log detail (if exists) */}
+        {todayLog && (
+          <div className="card-luxury p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-1 h-5 rounded-full gradient-pink" />
+              <h2 className="text-sm font-bold text-gray-800">Today&apos;s Log</h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {todayLog.energy_level && (
+                <div className="bg-blush-50 rounded-2xl px-3 py-2 flex justify-between items-center">
+                  <span className="text-gray-500 text-xs">Energy</span>
+                  <span className="font-bold text-gray-800">{todayLog.energy_level}/10</span>
+                </div>
+              )}
+              {todayLog.mood_level && (
+                <div className="bg-blush-50 rounded-2xl px-3 py-2 flex justify-between items-center">
+                  <span className="text-gray-500 text-xs">Mood</span>
+                  <span className="font-bold text-gray-800">{todayLog.mood_level}/10</span>
+                </div>
+              )}
+              {todayLog.calories && (
+                <div className="bg-blush-50 rounded-2xl px-3 py-2 flex justify-between items-center col-span-2">
+                  <span className="text-gray-500 text-xs">Calories</span>
+                  <span className="font-bold text-gray-800">{todayLog.calories} kcal</span>
+                </div>
+              )}
+              {todayLog.notes && (
+                <div className="col-span-2 bg-blush-50 rounded-2xl px-3 py-2">
+                  <span className="text-gray-400 text-xs block mb-0.5">Notes</span>
+                  <span className="font-medium text-gray-700 text-xs">{todayLog.notes}</span>
+                </div>
+              )}
+            </div>
           </div>
-          <div>
-            <p className="font-bold text-gray-800 text-sm">Workout</p>
-            <p className="text-xs text-gray-400">Start session</p>
-          </div>
-        </Link>
-        <Link href="/progress" className="bg-white rounded-3xl p-4 shadow-pink-sm flex items-center gap-3 active:scale-95 transition-transform">
-          <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center">
-            <span className="text-white text-lg">📈</span>
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 text-sm">Progress</p>
-            <p className="text-xs text-gray-400">View charts</p>
-          </div>
-        </Link>
+        )}
+
+        {/* Motivational footer */}
+        <div className="flex items-center justify-center gap-2 py-2">
+          <span className="text-gold-400 text-xs gold-pulse">✦</span>
+          <p className="text-xs font-bold tracking-[0.15em] text-pink-300 uppercase">Your Glow Era</p>
+          <span className="text-gold-400 text-xs gold-pulse" style={{ animationDelay: '1s' }}>✦</span>
+        </div>
+
       </div>
     </div>
   )

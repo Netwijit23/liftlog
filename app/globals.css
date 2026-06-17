@@ -7,6 +7,8 @@
   --pink-deep: #EC4899;
   --pink-hot: #DB2777;
   --blush: #FDF2F8;
+  --gold: #F59E0B;
+  --gold-light: #FDE68A;
 }
 
 @layer base {
@@ -26,26 +28,85 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
+
+  /* ── Gradients ── */
   .gradient-pink {
-    background: linear-gradient(135deg, #F472B6, #DB2777);
+    background: linear-gradient(135deg, #F9A8D4 0%, #EC4899 50%, #BE185D 100%);
   }
   .gradient-pink-soft {
     background: linear-gradient(135deg, #FBBFD5, #F472B6);
   }
+  .gradient-gold {
+    background: linear-gradient(135deg, #FDE68A, #F59E0B);
+  }
+  .gradient-hero {
+    background: linear-gradient(150deg, #BE185D 0%, #EC4899 45%, #F9A8D4 100%);
+  }
+
+  /* ── Text gradients ── */
   .text-gradient-pink {
     background: linear-gradient(135deg, #F472B6, #DB2777);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+  .text-gradient-gold {
+    background: linear-gradient(135deg, #FDE68A, #D97706);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Shadows ── */
   .shadow-pink-glow {
     box-shadow: 0 8px 32px rgba(244, 114, 182, 0.35);
   }
+  .shadow-gold-glow {
+    box-shadow: 0 4px 20px rgba(245, 158, 11, 0.4);
+  }
+
+  /* ── Cards ── */
   .card {
     background: white;
     border-radius: 1.5rem;
     box-shadow: 0 2px 16px rgba(236, 72, 153, 0.07), 0 1px 4px rgba(0,0,0,0.04);
   }
+  .card-luxury {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 4px 24px rgba(236, 72, 153, 0.1), 0 1px 4px rgba(0,0,0,0.04);
+    border: 1px solid rgba(244, 114, 182, 0.12);
+  }
+
+  /* ── Gold sparkle dots ── */
+  .sparkle::before,
+  .sparkle::after {
+    content: '✦';
+    color: #FDE68A;
+    font-size: 0.6rem;
+    position: absolute;
+  }
+
+  /* ── Shimmer animation ── */
+  .shimmer {
+    background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.6) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite;
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes gold-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.15); }
+}
+
+.gold-pulse {
+  animation: gold-pulse 2.5s ease-in-out infinite;
 }
 
 input[type='range'] {

@@ -25,11 +25,17 @@ const tabs = [
   {
     href: '/workout',
     label: 'Workout',
-    icon: (active: boolean) => (
-      <svg viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth={2} className="w-6 h-6">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m-7.5-7.5v15" />
-        <circle cx="12" cy="12" r="9" strokeLinecap="round" />
-      </svg>
+    icon: (_active: boolean) => (
+      /* Centre pill — always rendered as a gradient circle */
+      <div className="w-12 h-12 rounded-full gradient-pink shadow-pink-md flex items-center justify-center -mt-6 border-4 border-blush-50">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2.2} className="w-5 h-5">
+          <rect x="2" y="10" width="3" height="4" rx="1" fill="white" stroke="none"/>
+          <rect x="19" y="10" width="3" height="4" rx="1" fill="white" stroke="none"/>
+          <rect x="5" y="8" width="3" height="8" rx="1.5" fill="white" stroke="none"/>
+          <rect x="16" y="8" width="3" height="8" rx="1.5" fill="white" stroke="none"/>
+          <rect x="8" y="11" width="8" height="2" rx="1" fill="white" stroke="none"/>
+        </svg>
+      </div>
     ),
   },
   {
@@ -57,15 +63,37 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 pb-safe" style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', borderTop: '1px solid rgba(244,114,182,0.12)' }}>
-      <div className="flex items-center justify-around px-2 py-2 max-w-lg mx-auto">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-50 pb-safe"
+      style={{
+        background: 'rgba(253, 242, 248, 0.88)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)',
+        borderTop: '1px solid rgba(244,114,182,0.15)',
+        boxShadow: '0 -4px 24px rgba(236,72,153,0.08)',
+      }}
+    >
+      <div className="flex items-end justify-around px-2 pt-1 pb-2 max-w-lg mx-auto">
         {tabs.map((tab) => {
           const active = pathname === tab.href
+          const isWorkout = tab.href === '/workout'
+
+          if (isWorkout) {
+            return (
+              <Link key={tab.href} href={tab.href} className="flex flex-col items-center gap-0.5 px-2">
+                {tab.icon(active)}
+                <span className={`text-[10px] font-bold tracking-tight ${active ? 'text-pink-500' : 'text-gray-400'}`}>
+                  {tab.label}
+                </span>
+              </Link>
+            )
+          }
+
           return (
             <Link
               key={tab.href}
               href={tab.href}
-              className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-2xl transition-all ${
+              className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl transition-all ${
                 active ? 'text-pink-500' : 'text-gray-400'
               }`}
             >
@@ -73,9 +101,7 @@ export default function BottomNav() {
               <span className={`text-[10px] font-bold tracking-tight ${active ? 'text-pink-500' : 'text-gray-400'}`}>
                 {tab.label}
               </span>
-              {active && (
-                <span className="w-1 h-1 rounded-full bg-pink-400 mt-0.5" />
-              )}
+              {active && <span className="w-1 h-1 rounded-full bg-pink-400 mt-0.5" />}
             </Link>
           )
         })}

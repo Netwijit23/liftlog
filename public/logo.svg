@@ -1,0 +1,44 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F9A8D4"/>
+      <stop offset="100%" stop-color="#BE185D"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE68A"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
+  <!-- Inner ring -->
+  <rect x="12" y="12" width="488" height="488" rx="102" fill="none" stroke="#FECDD3" stroke-width="3" opacity="0.45"/>
+
+  <!-- Dumbbell -->
+  <rect x="88"  y="221" width="44" height="70" rx="10" fill="white" opacity="0.95"/>
+  <rect x="132" y="236" width="28" height="40" rx="6"  fill="white" opacity="0.8"/>
+  <rect x="160" y="241" width="192" height="30" rx="8"  fill="white" opacity="0.9"/>
+  <rect x="352" y="236" width="28" height="40" rx="6"  fill="white" opacity="0.8"/>
+  <rect x="380" y="221" width="44" height="70" rx="10" fill="white" opacity="0.95"/>
+
+  <!-- Star top-right -->
+  <g transform="translate(412,108)">
+    <line x1="0" y1="-16" x2="0" y2="16" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-16" y1="0" x2="16" y2="0" stroke="url(#gold)" stroke-width="5" stroke-linecap="round"/>
+    <line x1="-11" y1="-11" x2="11" y2="11" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+    <line x1="11" y1="-11" x2="-11" y2="11" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <!-- Small star bottom-left -->
+  <g transform="translate(106,400)">
+    <line x1="0" y1="-10" x2="0" y2="10" stroke="#FECDD3" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="-10" y1="0" x2="10" y2="0" stroke="#FECDD3" stroke-width="3.5" stroke-linecap="round"/>
+    <line x1="-7" y1="-7" x2="7" y2="7" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+    <line x1="7" y1="-7" x2="-7" y2="7" stroke="#FECDD3" stroke-width="2" stroke-linecap="round"/>
+  </g>
+  <circle cx="100" cy="118" r="7" fill="#FDE68A" opacity="0.85"/>
+  <circle cx="415" cy="398" r="5" fill="#FDE68A" opacity="0.7"/>
+
+  <!-- MF monogram -->
+  <text x="256" y="438" font-family="Georgia, serif" font-size="88" font-weight="700" fill="white" text-anchor="middle" letter-spacing="8" opacity="0.92">MF</text>
+</svg>

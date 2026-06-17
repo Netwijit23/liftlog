@@ -90,7 +90,7 @@ export default function LogPage() {
       .select('*')
       .eq('user_id', USER_ID)
       .eq('date', today)
-      .single()
+      .maybeSingle()
     if (data) {
       setLog({
         weight_kg: data.weight_kg?.toString() ?? '',
