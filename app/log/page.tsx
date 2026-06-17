@@ -30,7 +30,7 @@ const defaultLog: LogData = {
   notes: '',
 }
 
-function SliderField({ label, value, onChange, min = 1, max = 10, color = '#FF6B00' }: {
+function SliderField({ label, value, onChange, min = 1, max = 10, color = '#F472B6' }: {
   label: string; value: number; onChange: (v: number) => void
   min?: number; max?: number; color?: string
 }) {
@@ -64,7 +64,7 @@ function InputField({ label, value, onChange, type = 'text', placeholder = '', s
         <input
           type={type} value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#F5F5F7] rounded-2xl px-4 py-3 text-gray-900 font-medium text-base outline-none focus:ring-2 focus:ring-orange-400 transition-all pr-12"
+          className="w-full bg-blush-50 rounded-2xl px-4 py-3 text-gray-900 font-medium text-base outline-none focus:ring-2 focus:ring-pink-400 transition-all pr-12"
         />
         {suffix && (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">
@@ -142,13 +142,13 @@ export default function LogPage() {
       </div>
 
       {/* Tabs */}
-      <div className="bg-white rounded-2xl p-1 flex shadow-sm">
+      <div className="bg-white rounded-2xl p-1 flex shadow-pink-sm">
         {(['morning', 'evening'] as Tab[]).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`flex-1 py-2.5 rounded-xl text-sm font-bold capitalize transition-all ${
-              tab === t ? 'gradient-orange text-white shadow' : 'text-gray-400'
+              tab === t ? 'gradient-pink text-white shadow' : 'text-gray-400'
             }`}
           >
             {t === 'morning' ? '☀️ Morning' : '🌙 Evening'}
@@ -158,7 +158,7 @@ export default function LogPage() {
 
       {tab === 'morning' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Body Metrics</h2>
             <InputField
               label="Weight" value={log.weight_kg} onChange={set('weight_kg') as (v: string) => void}
@@ -170,16 +170,16 @@ export default function LogPage() {
             />
           </div>
 
-          <div className="bg-white rounded-3xl p-5 shadow-sm space-y-5">
+          <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-5">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Recovery</h2>
             <SliderField
               label="Sleep" value={log.sleep_hours}
               onChange={set('sleep_hours') as (v: number) => void}
-              min={3} max={12} color="#3B82F6"
+              min={3} max={12} color="#818CF8"
             />
           </div>
 
-          <div className="bg-white rounded-3xl p-5 shadow-sm space-y-5">
+          <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-5">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Wellbeing</h2>
             <SliderField
               label="Energy ⚡" value={log.energy_level}
@@ -188,7 +188,7 @@ export default function LogPage() {
             <SliderField
               label="Mood 😊" value={log.mood_level}
               onChange={set('mood_level') as (v: number) => void}
-              color="#8B5CF6"
+              color="#E879F9"
             />
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function LogPage() {
 
       {tab === 'evening' && (
         <div className="space-y-4">
-          <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+          <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Activity</h2>
 
             <div className="flex items-center justify-between">
@@ -207,7 +207,7 @@ export default function LogPage() {
               <button
                 onClick={() => set('workout_completed')(!log.workout_completed)}
                 className={`w-14 h-8 rounded-full transition-all relative ${
-                  log.workout_completed ? 'gradient-orange' : 'bg-gray-200'
+                  log.workout_completed ? 'gradient-pink' : 'bg-gray-200'
                 }`}
               >
                 <span className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-all ${
@@ -226,14 +226,14 @@ export default function LogPage() {
             />
           </div>
 
-          <div className="bg-white rounded-3xl p-5 shadow-sm space-y-3">
+          <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-3">
             <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Notes</h2>
             <textarea
               value={log.notes}
               onChange={(e) => set('notes')(e.target.value)}
               placeholder="How did the day go? Any observations..."
               rows={4}
-              className="w-full bg-[#F5F5F7] rounded-2xl px-4 py-3 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-orange-400 resize-none transition-all"
+              className="w-full bg-blush-50 rounded-2xl px-4 py-3 text-gray-900 text-sm outline-none focus:ring-2 focus:ring-pink-400 resize-none transition-all"
             />
           </div>
         </div>
@@ -242,7 +242,7 @@ export default function LogPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full gradient-orange text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-orange-200 active:scale-95 transition-all disabled:opacity-60"
+        className="w-full gradient-pink text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-pink-md active:scale-95 transition-all disabled:opacity-60"
       >
         {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Log'}
       </button>

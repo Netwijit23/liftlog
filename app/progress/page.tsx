@@ -24,7 +24,7 @@ interface WorkoutLog {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-3xl p-5 shadow-sm space-y-3">
+    <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-3">
       <h2 className="text-sm font-bold text-gray-700">{title}</h2>
       {children}
     </div>
@@ -90,8 +90,8 @@ export default function ProgressPage() {
             <AreaChart data={weightData} margin={{ left: -10 }}>
               <defs>
                 <linearGradient id="wGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FF6B00" stopOpacity={0.3} />
-                  <stop offset="100%" stopColor="#FF6B00" stopOpacity={0} />
+                  <stop offset="0%" stopColor="#F472B6" stopOpacity={0.3} />
+                  <stop offset="100%" stopColor="#F472B6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
@@ -101,7 +101,7 @@ export default function ProgressPage() {
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }}
                 formatter={(v: number) => [`${v} kg`, 'Weight']}
               />
-              <Area type="monotone" dataKey="value" stroke="#FF6B00" strokeWidth={2} fill="url(#wGrad)" dot={false} />
+              <Area type="monotone" dataKey="value" stroke="#F472B6" strokeWidth={2} fill="url(#wGrad)" dot={false} />
             </AreaChart>
           </ResponsiveContainer>
         )}
@@ -118,7 +118,7 @@ export default function ProgressPage() {
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }}
                 formatter={(v: number) => [`${v} cm`, 'Waist']}
               />
-              <Line type="monotone" dataKey="value" stroke="#8B5CF6" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="value" stroke="#A855F7" strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         )}
@@ -135,8 +135,8 @@ export default function ProgressPage() {
                 contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 20px rgba(0,0,0,0.1)', fontSize: 12 }}
                 formatter={(v: number) => [`${v}h`, 'Sleep']}
               />
-              <ReferenceLine y={7.5} stroke="#93C5FD" strokeDasharray="4 4" label={{ value: '7.5h', position: 'right', fontSize: 10, fill: '#93C5FD' }} />
-              <Bar dataKey="value" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+              <ReferenceLine y={7.5} stroke="#C084FC" strokeDasharray="4 4" label={{ value: '7.5h', position: 'right', fontSize: 10, fill: '#C084FC' }} />
+              <Bar dataKey="value" fill="#818CF8" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -148,8 +148,8 @@ export default function ProgressPage() {
             <BarChart data={volumeData} margin={{ left: -10 }}>
               <defs>
                 <linearGradient id="volGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#FF6B00" />
-                  <stop offset="100%" stopColor="#FF3B00" />
+                  <stop offset="0%" stopColor="#F472B6" />
+                  <stop offset="100%" stopColor="#DB2777" />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" vertical={false} />

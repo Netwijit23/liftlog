@@ -212,7 +212,7 @@ export default function WorkoutPage() {
         {/* Progress bar */}
         <div className="bg-gray-100 rounded-full h-2">
           <div
-            className="gradient-orange h-2 rounded-full transition-all"
+            className="gradient-pink h-2 rounded-full transition-all"
             style={{ width: `${totalSets > 0 ? (totalDone / totalSets) * 100 : 0}%` }}
           />
         </div>
@@ -222,7 +222,7 @@ export default function WorkoutPage() {
           const best1RM = prs[ex.name]
 
           return (
-            <div key={ex.id} className="bg-white rounded-3xl p-5 shadow-sm space-y-3">
+            <div key={ex.id} className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-3">
               <div className="flex items-center justify-between">
                 <h2 className="font-bold text-gray-900">{ex.name}</h2>
                 <div className="flex items-center gap-2">
@@ -254,7 +254,7 @@ export default function WorkoutPage() {
                     <button
                       onClick={() => toggleSet(exIdx, sIdx)}
                       className={`w-8 h-8 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-                        s.done ? 'gradient-orange border-transparent text-white' : 'border-gray-200 text-transparent'
+                        s.done ? 'gradient-pink border-transparent text-white' : 'border-gray-200 text-transparent'
                       }`}
                     >
                       ✓
@@ -263,17 +263,17 @@ export default function WorkoutPage() {
                     <input
                       type="number" value={s.weight}
                       onChange={(e) => updateSet(exIdx, sIdx, 'weight', Number(e.target.value))}
-                      className="w-16 bg-[#F5F5F7] rounded-xl px-2 py-1.5 text-sm font-bold text-center outline-none"
+                      className="w-16 bg-blush-50 rounded-xl px-2 py-1.5 text-sm font-bold text-center outline-none"
                     />
                     <span className="text-gray-300 text-xs">kg ×</span>
                     <input
                       type="number" value={s.reps}
                       onChange={(e) => updateSet(exIdx, sIdx, 'reps', Number(e.target.value))}
-                      className="w-14 bg-[#F5F5F7] rounded-xl px-2 py-1.5 text-sm font-bold text-center outline-none"
+                      className="w-14 bg-blush-50 rounded-xl px-2 py-1.5 text-sm font-bold text-center outline-none"
                     />
                     <span className="text-gray-300 text-xs">reps</span>
                     {s.done && (
-                      <span className="text-[10px] text-orange-400 font-medium ml-auto">
+                      <span className="text-[10px] text-pink-400 font-medium ml-auto">
                         ~{Math.round(epley1RM(s.weight, s.reps))}kg
                       </span>
                     )}
@@ -283,7 +283,7 @@ export default function WorkoutPage() {
 
               <button
                 onClick={() => addSet(exIdx)}
-                className="text-sm text-orange-500 font-semibold flex items-center gap-1"
+                className="text-sm text-pink-500 font-semibold flex items-center gap-1"
               >
                 <span className="text-lg leading-none">+</span> Add set
               </button>
@@ -294,7 +294,7 @@ export default function WorkoutPage() {
         <button
           onClick={finishSession}
           disabled={saving || totalDone === 0}
-          className="w-full gradient-orange text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-orange-200 active:scale-95 transition-all disabled:opacity-50"
+          className="w-full gradient-pink text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-pink-md active:scale-95 transition-all disabled:opacity-50"
         >
           {saving ? 'Saving…' : saved ? '✓ Session saved!' : `Finish Workout (${totalDone} sets)`}
         </button>
@@ -308,14 +308,14 @@ export default function WorkoutPage() {
         <h1 className="text-2xl font-bold text-gray-900">Workouts</h1>
         <button
           onClick={() => setShowNewPlan(true)}
-          className="gradient-orange text-white font-bold text-sm px-4 py-2 rounded-2xl shadow"
+          className="gradient-pink text-white font-bold text-sm px-4 py-2 rounded-2xl shadow"
         >
           + New Plan
         </button>
       </div>
 
       {plans.length === 0 && !showNewPlan && (
-        <div className="bg-white rounded-3xl p-8 shadow-sm text-center space-y-3">
+        <div className="bg-white rounded-3xl p-8 shadow-pink-sm text-center space-y-3">
           <span className="text-4xl">💪</span>
           <p className="font-bold text-gray-700">No workout plans yet</p>
           <p className="text-sm text-gray-400">Create your first plan to get started</p>
@@ -323,21 +323,21 @@ export default function WorkoutPage() {
       )}
 
       {plans.map((plan) => (
-        <div key={plan.id} className="bg-white rounded-3xl p-5 shadow-sm">
+        <div key={plan.id} className="bg-white rounded-3xl p-5 shadow-pink-sm">
           <div className="flex items-center justify-between mb-3">
             <h2 className="font-bold text-gray-900 text-base">{plan.name}</h2>
             <button onClick={() => deletePlan(plan.id)} className="text-gray-300 text-xs hover:text-red-400">Delete</button>
           </div>
           <div className="flex flex-wrap gap-1.5 mb-4">
             {plan.exercises.map((ex) => (
-              <span key={ex.id} className="text-xs bg-[#F5F5F7] text-gray-600 font-medium px-2.5 py-1 rounded-full">
+              <span key={ex.id} className="text-xs bg-blush-50 text-gray-600 font-medium px-2.5 py-1 rounded-full">
                 {ex.name}
               </span>
             ))}
           </div>
           <button
             onClick={() => startSession(plan)}
-            className="w-full gradient-orange text-white font-bold text-sm py-3 rounded-2xl shadow active:scale-95 transition-transform"
+            className="w-full gradient-pink text-white font-bold text-sm py-3 rounded-2xl shadow active:scale-95 transition-transform"
           >
             Start Session →
           </button>
@@ -345,20 +345,20 @@ export default function WorkoutPage() {
       ))}
 
       {showNewPlan && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+        <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
           <h2 className="font-bold text-gray-900">New Plan</h2>
 
           <input
             value={newPlanName}
             onChange={(e) => setNewPlanName(e.target.value)}
             placeholder="Plan name (e.g. Push Day A)"
-            className="w-full bg-[#F5F5F7] rounded-2xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-orange-400"
+            className="w-full bg-blush-50 rounded-2xl px-4 py-3 text-sm font-medium outline-none focus:ring-2 focus:ring-pink-400"
           />
 
           <div className="space-y-3">
             <p className="text-xs font-bold text-gray-500 uppercase tracking-widest">Exercises</p>
             {newExercises.map((ex, i) => (
-              <div key={i} className="space-y-2 bg-[#F5F5F7] rounded-2xl p-3">
+              <div key={i} className="space-y-2 bg-blush-50 rounded-2xl p-3">
                 <input
                   value={ex.name}
                   onChange={(e) => {
@@ -392,7 +392,7 @@ export default function WorkoutPage() {
             ))}
             <button
               onClick={() => setNewExercises([...newExercises, { name: '', defaultSets: 3, defaultReps: 10, defaultWeight: 60 }])}
-              className="text-sm text-orange-500 font-semibold"
+              className="text-sm text-pink-500 font-semibold"
             >
               + Add exercise
             </button>
@@ -407,7 +407,7 @@ export default function WorkoutPage() {
             </button>
             <button
               onClick={savePlan}
-              className="flex-1 gradient-orange text-white font-bold text-sm py-3 rounded-2xl shadow"
+              className="flex-1 gradient-pink text-white font-bold text-sm py-3 rounded-2xl shadow"
             >
               Save Plan
             </button>

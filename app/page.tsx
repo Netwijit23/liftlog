@@ -16,7 +16,7 @@ function ActivityRing({
     <div className="flex flex-col items-center gap-1">
       <div className="relative" style={{ width: size, height: size }}>
         <svg width={size} height={size} className="-rotate-90">
-          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#E5E7EB" strokeWidth={10} />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#FCE7F3" strokeWidth={10} />
           <circle
             cx={size / 2} cy={size / 2} r={r} fill="none"
             stroke={color} strokeWidth={10}
@@ -79,7 +79,7 @@ export default async function HomePage() {
           <p className="text-sm text-gray-400 font-medium">{formatDate(new Date())}</p>
           <h1 className="text-2xl font-bold text-gray-900 mt-0.5">{greeting}, {name} 👋</h1>
         </div>
-        <div className="w-10 h-10 rounded-full gradient-orange flex items-center justify-center text-white font-bold text-lg shadow-md">
+        <div className="w-10 h-10 rounded-full gradient-pink flex items-center justify-center text-white font-bold text-lg shadow-md">
           {name[0]?.toUpperCase()}
         </div>
       </div>
@@ -91,7 +91,7 @@ export default async function HomePage() {
           { label: 'Streak', value: `${streak}d`, sub: 'days in a row' },
           { label: 'Workouts', value: workoutsThisWeek.toString(), sub: 'this week' },
         ].map((s) => (
-          <div key={s.label} className="bg-white rounded-3xl p-4 shadow-sm text-center">
+          <div key={s.label} className="bg-white rounded-3xl p-4 shadow-pink-sm text-center">
             <p className="text-2xl font-bold text-gray-900 tracking-tight">{s.value}</p>
             <p className="text-xs font-semibold text-gray-500 mt-0.5">{s.label}</p>
             <p className="text-[10px] text-gray-300">{s.sub}</p>
@@ -100,24 +100,24 @@ export default async function HomePage() {
       </div>
 
       {/* Activity rings */}
-      <div className="bg-white rounded-3xl p-5 shadow-sm">
+      <div className="bg-white rounded-3xl p-5 shadow-pink-sm">
         <h2 className="text-sm font-bold text-gray-700 mb-4">Today&apos;s Activity</h2>
         <div className="flex justify-around">
           <ActivityRing
             pct={todayLog?.workout_completed ? 1 : 0}
-            color="#FF6B00"
+            color="#F472B6"
             label="Workout"
             value={todayLog?.workout_completed ? 'Done' : 'Pending'}
           />
           <ActivityRing
             pct={todaySteps / stepGoal}
-            color="#8B5CF6"
+            color="#E879F9"
             label="Steps"
             value={`${todaySteps.toLocaleString()}`}
           />
           <ActivityRing
             pct={Math.min((todayLog?.sleep_hours ?? 0) / 8, 1)}
-            color="#3B82F6"
+            color="#818CF8"
             label="Sleep"
             value={todayLog?.sleep_hours ? `${todayLog.sleep_hours}h` : '—'}
           />
@@ -126,7 +126,7 @@ export default async function HomePage() {
 
       {/* Today's summary card */}
       {todayLog && (
-        <div className="bg-white rounded-3xl p-5 shadow-sm">
+        <div className="bg-white rounded-3xl p-5 shadow-pink-sm">
           <h2 className="text-sm font-bold text-gray-700 mb-3">Today&apos;s Log</h2>
           <div className="grid grid-cols-2 gap-3 text-sm">
             {todayLog.energy_level && (
@@ -160,15 +160,15 @@ export default async function HomePage() {
       {/* CTA */}
       <Link
         href="/log"
-        className="block w-full gradient-orange text-white text-center font-bold text-base py-4 rounded-3xl shadow-lg shadow-orange-200 active:scale-95 transition-transform"
+        className="block w-full gradient-pink text-white text-center font-bold text-base py-4 rounded-3xl shadow-lg shadow-pink-md active:scale-95 transition-transform"
       >
         {todayLog ? 'Update Today\'s Log' : 'Log Today →'}
       </Link>
 
       {/* Quick links */}
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/workout" className="bg-white rounded-3xl p-4 shadow-sm flex items-center gap-3 active:scale-95 transition-transform">
-          <div className="w-10 h-10 gradient-orange rounded-2xl flex items-center justify-center">
+        <Link href="/workout" className="bg-white rounded-3xl p-4 shadow-pink-sm flex items-center gap-3 active:scale-95 transition-transform">
+          <div className="w-10 h-10 gradient-pink rounded-2xl flex items-center justify-center">
             <span className="text-white text-lg">💪</span>
           </div>
           <div>
@@ -176,8 +176,8 @@ export default async function HomePage() {
             <p className="text-xs text-gray-400">Start session</p>
           </div>
         </Link>
-        <Link href="/progress" className="bg-white rounded-3xl p-4 shadow-sm flex items-center gap-3 active:scale-95 transition-transform">
-          <div className="w-10 h-10 bg-purple-500 rounded-2xl flex items-center justify-center">
+        <Link href="/progress" className="bg-white rounded-3xl p-4 shadow-pink-sm flex items-center gap-3 active:scale-95 transition-transform">
+          <div className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-400 rounded-2xl flex items-center justify-center">
             <span className="text-white text-lg">📈</span>
           </div>
           <div>

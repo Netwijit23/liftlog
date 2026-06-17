@@ -31,7 +31,7 @@ function Field({ label, value, onChange, type = 'text', placeholder = '', suffix
         <input
           type={type} value={value} onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-[#F5F5F7] rounded-2xl px-4 py-3 text-gray-900 font-medium outline-none focus:ring-2 focus:ring-orange-400 transition-all pr-14"
+          className="w-full bg-blush-50 rounded-2xl px-4 py-3 text-gray-900 font-medium outline-none focus:ring-2 focus:ring-pink-400 transition-all pr-14"
         />
         {suffix && (
           <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-medium">{suffix}</span>
@@ -89,7 +89,7 @@ export default function SettingsPage() {
 
       {/* Goal summary */}
       {startWeight && goalWeight && (
-        <div className="gradient-orange rounded-3xl p-5 text-white">
+        <div className="gradient-pink rounded-3xl p-5 text-white">
           <p className="text-sm font-medium opacity-80">Your goal</p>
           <p className="text-2xl font-bold mt-1">
             {startWeight} → {goalWeight} kg
@@ -100,12 +100,12 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+      <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
         <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Profile</h2>
         <Field label="Your name" value={profile.name} onChange={set('name')} placeholder="Alex" />
       </div>
 
-      <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+      <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
         <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Weight Goals</h2>
         <Field
           label="Starting weight" value={profile.start_weight} onChange={set('start_weight')}
@@ -117,7 +117,7 @@ export default function SettingsPage() {
         />
       </div>
 
-      <div className="bg-white rounded-3xl p-5 shadow-sm space-y-4">
+      <div className="bg-white rounded-3xl p-5 shadow-pink-sm space-y-4">
         <h2 className="text-sm font-bold text-gray-500 uppercase tracking-widest">Daily Targets</h2>
         <Field
           label="Step goal" value={profile.step_goal} onChange={set('step_goal')}
@@ -132,7 +132,7 @@ export default function SettingsPage() {
       <button
         onClick={handleSave}
         disabled={saving}
-        className="w-full gradient-orange text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-orange-200 active:scale-95 transition-all disabled:opacity-60"
+        className="w-full gradient-pink text-white font-bold text-base py-4 rounded-3xl shadow-lg shadow-pink-md active:scale-95 transition-all disabled:opacity-60"
       >
         {saving ? 'Saving…' : saved ? '✓ Saved!' : 'Save Settings'}
       </button>

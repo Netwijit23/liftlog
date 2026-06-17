@@ -3,8 +3,10 @@
 @tailwind utilities;
 
 :root {
-  --orange: #FF6B00;
-  --orange-deep: #FF3B00;
+  --pink: #F472B6;
+  --pink-deep: #EC4899;
+  --pink-hot: #DB2777;
+  --blush: #FDF2F8;
 }
 
 @layer base {
@@ -13,7 +15,7 @@
     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif;
   }
   body {
-    background-color: #F5F5F7;
+    background-color: #FDF2F8;
   }
 }
 
@@ -24,14 +26,25 @@
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }
-  .gradient-orange {
-    background: linear-gradient(135deg, #FF6B00, #FF3B00);
+  .gradient-pink {
+    background: linear-gradient(135deg, #F472B6, #DB2777);
   }
-  .text-gradient-orange {
-    background: linear-gradient(135deg, #FF6B00, #FF3B00);
+  .gradient-pink-soft {
+    background: linear-gradient(135deg, #FBBFD5, #F472B6);
+  }
+  .text-gradient-pink {
+    background: linear-gradient(135deg, #F472B6, #DB2777);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+  .shadow-pink-glow {
+    box-shadow: 0 8px 32px rgba(244, 114, 182, 0.35);
+  }
+  .card {
+    background: white;
+    border-radius: 1.5rem;
+    box-shadow: 0 2px 16px rgba(236, 72, 153, 0.07), 0 1px 4px rgba(0,0,0,0.04);
   }
 }
 
@@ -40,7 +53,7 @@ input[type='range'] {
   appearance: none;
   height: 6px;
   border-radius: 3px;
-  background: #e5e7eb;
+  background: #FCE7F3;
   outline: none;
 }
 
@@ -50,7 +63,7 @@ input[type='range']::-webkit-slider-thumb {
   width: 22px;
   height: 22px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #FF6B00, #FF3B00);
+  background: linear-gradient(135deg, #F472B6, #DB2777);
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(255, 107, 0, 0.4);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.45);
 }

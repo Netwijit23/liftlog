@@ -9,11 +9,12 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        orange: {
-          brand: '#FF6B00',
-          deep: '#FF3B00',
+        canvas: '#FDF2F8',
+        blush: {
+          50: '#FDF2F8',
+          100: '#FCE7F3',
+          200: '#FBCFE8',
         },
-        canvas: '#F5F5F7',
       },
       borderRadius: {
         '3xl': '1.5rem',
@@ -24,6 +25,11 @@ const config: Config = {
           '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display',
           'system-ui', 'sans-serif',
         ],
+      },
+      boxShadow: {
+        'pink-sm': '0 2px 16px rgba(236, 72, 153, 0.08)',
+        'pink-md': '0 8px 32px rgba(236, 72, 153, 0.25)',
+        'pink-lg': '0 12px 40px rgba(219, 39, 119, 0.35)',
       },
     },
   },
