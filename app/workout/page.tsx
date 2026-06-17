@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { USER_ID } from '@/lib/user'
+import ExerciseAnimation from '@/components/ExerciseAnimation'
 
 interface Exercise {
   id: string
@@ -56,6 +57,7 @@ export default function WorkoutPage() {
   const [newPRs, setNewPRs] = useState<Set<string>>(new Set())
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [expandedAnim, setExpandedAnim] = useState<string | null>(null)
 
   const loadPlans = useCallback(async () => {
     const { data } = await supabase.from('ll_workout_plans').select('*').eq('user_id', USER_ID).order('created_at')
@@ -232,8 +234,25 @@ export default function WorkoutPage() {
                       1RM ~{Math.round(best1RM)}kg
                     </span>
                   )}
+                  <button
+                    onClick={() => setExpandedAnim(expandedAnim === ex.id ? null : ex.id)}
+                    className={`text-[11px] font-bold px-2.5 py-1 rounded-full border transition-all ${
+                      expandedAnim === ex.id
+                        ? 'gradient-pink text-white border-transparent'
+                        : 'border-pink-200 text-pink-400 bg-pink-50'
+                    }`}
+                  >
+                    {expandedAnim === ex.id ? 'Hide' : '▶ Demo'}
+                  </button>
                 </div>
               </div>
+
+              {/* Exercise animation */}
+              {expandedAnim === ex.id && (
+                <div className="overflow-hidden transition-all">
+                  <ExerciseAnimation name={ex.name} />
+                </div>
+              )}
 
               {/* Last session chips */}
               {lastSession && (
