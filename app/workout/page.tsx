@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { USER_ID } from '@/lib/user'
 import ExerciseGif from '@/components/ExerciseGif'
-import CoachChat from '@/components/CoachChat'
 import { getExerciseTip } from '@/lib/exerciseTips'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -269,15 +268,7 @@ export default function WorkoutPage() {
     initSession(plan.id, plan.name, exercises)
   }
 
-  function startGeneratedSession(workout: { name: string; exercises: { name: string; sets: number; reps: number; weight: number }[] }) {
-    const exercises: ExerciseLog[] = workout.exercises.map((ex) => ({
-      id: crypto.randomUUID(), name: ex.name,
-      sets: Array.from({ length: ex.sets }, () => ({ weight: ex.weight, reps: ex.reps, done: false })),
-    }))
-    initSession('coach-generated', workout.name, exercises)
-  }
-
-  function advanceAfterRest() {
+function advanceAfterRest() {
     if (restRef.current) clearInterval(restRef.current)
     setPhase('exercise')
   }
@@ -736,7 +727,6 @@ export default function WorkoutPage() {
         </div>
       )}
 
-      <CoachChat onStartWorkout={startGeneratedSession} />
     </div>
   )
 }
