@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { USER_ID } from '@/lib/user'
 import { getProgramDay, TYPE_LABELS, TYPE_EMOJI } from '@/lib/program'
 import Link from 'next/link'
+import StartChallenge from '@/components/StartChallenge'
 
 function formatDate(d: Date) {
   return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
@@ -65,15 +66,19 @@ export default async function HomePage() {
   const supabase = createClient()
   const today = new Date().toISOString().split('T')[0]
 
-  const [profileRes, todayLogRes, recentLogsRes, challengeRes, checkinsRes] = await Promise.all([
+  const [profileRes, todayLogRes, recentLogsRes] = await Promise.all([
     supabase.from('ll_profile').select('*').eq('user_id', USER_ID).maybeSingle(),
     supabase.from('ll_daily_logs').select('*').eq('user_id', USER_ID).eq('date', today).maybeSingle(),
     supabase.from('ll_daily_logs').select('date,workout_completed,step_count')
       .eq('user_id', USER_ID).order('date', { ascending: false }).limit(30),
-    supabase.from('ll_challenge_profile').select('*').eq('user_id', USER_ID).maybeSingle(),
-    supabase.from('ll_checkins').select('weight_kg,sleep_hours,hrv,date')
-      .eq('user_id', USER_ID).order('date', { ascending: false }).limit(10),
   ])
+  // New tables — may not exist yet; fall back gracefully
+  const challengeRes = await Promise.resolve(
+    supabase.from('ll_challenge_profile').select('*').eq('user_id', USER_ID).maybeSingle()
+  ).catch(() => ({ data: null, error: null }))
+  const checkinsRes = await Promise.resolve(
+    supabase.from('ll_checkins').select('weight_kg,sleep_hours,hrv,date').eq('user_id', USER_ID).order('date', { ascending: false }).limit(10)
+  ).catch(() => ({ data: [] as { weight_kg?: number; sleep_hours?: number; hrv?: number; date: string }[], error: null }))
 
   const profile = profileRes.data
   const todayLog = todayLogRes.data
@@ -177,7 +182,7 @@ export default async function HomePage() {
             {hasChallenge ? (
               <p className="text-xs text-gray-400 mt-0.5">{30 - challengeDay} days left to glow ✨</p>
             ) : (
-              <p className="text-xs text-pink-500 font-bold mt-0.5">Start your challenge today!</p>
+              <StartChallenge />
             )}
           </div>
         </div>

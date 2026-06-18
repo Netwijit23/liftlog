@@ -198,6 +198,8 @@ export default function WorkoutPage() {
   const [prs, setPrs] = useState<Record<string, number>>({})
   const [newPR, setNewPR] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const loadPlans = useCallback(async () => {
     const { data } = await supabase.from('ll_workout_plans').select('*').eq('user_id', USER_ID).order('created_at')
@@ -359,18 +361,27 @@ function advanceAfterRest() {
       exerciseName: ex.name,
       sets: ex.sets.filter((s) => s.done).map(({ weight, reps }) => ({ weight, reps })),
     }))
-    await supabase.from('ll_workout_logs').insert({
+    const { error: logErr } = await supabase.from('ll_workout_logs').insert({
       user_id: USER_ID, date: today,
       plan_id: session.planId, plan_name: session.planName, sets,
     })
-    await supabase.from('ll_daily_logs').upsert({
+    const { error: dailyErr } = await supabase.from('ll_daily_logs').upsert({
       user_id: USER_ID, date: today,
       workout_completed: true, updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,date' })
+    if (logErr || dailyErr) {
+      setSaveError('Save failed — check your connection and try again.')
+      setSaving(false)
+      return
+    }
     await loadHistory()
     setSaving(false)
-    setSession(null)
-    setPhase('exercise')
+    setSaveSuccess(true)
+    setTimeout(() => {
+      setSaveSuccess(false)
+      setSession(null)
+      setPhase('exercise')
+    }, 1800)
   }
 
   function cancelSession() {
@@ -449,12 +460,18 @@ function advanceAfterRest() {
             })}
           </div>
 
+          {saveError && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 text-sm text-red-600 font-medium mb-3 text-center">
+              {saveError}
+            </div>
+          )}
+
           <button
-            onClick={saveWorkout}
-            disabled={saving}
+            onClick={() => { setSaveError(null); saveWorkout() }}
+            disabled={saving || saveSuccess}
             className="w-full gradient-pink text-white font-bold text-base py-4 rounded-3xl shadow-pink-md active:scale-95 transition-all disabled:opacity-60 mt-auto"
           >
-            {saving ? 'Saving…' : '✓ Save Workout'}
+            {saving ? 'Saving…' : saveSuccess ? '✓ Saved! Great work 💪' : '✓ Save Workout'}
           </button>
         </div>
       )

@@ -100,6 +100,12 @@ export default function CheckinPage() {
   const [saving, setSaving] = useState(false)
   const [syncing, setSyncing] = useState(false)
   const [confetti, setConfetti] = useState(false)
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null)
+
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   const [morningAI, setMorningAI] = useState<MorningAnalysis | null>(null)
   const [postAI, setPostAI] = useState<PostActivityAnalysis | null>(null)
@@ -199,7 +205,7 @@ export default function CheckinPage() {
 
   const saveMorning = async () => {
     setSaving(true)
-    await upsert({
+    const err = await upsert({
       weight_kg: form.weight_kg ?? null,
       waist_cm: form.waist_cm ?? null,
       sleep_hours: form.sleep_hours ?? null,
@@ -210,6 +216,7 @@ export default function CheckinPage() {
       motivation: form.motivation ?? null,
       joint_feel: form.joint_feel ?? null,
     })
+    if (err) { showToast('Save failed — check connection', false); setSaving(false); return }
     try {
       const res = await fetch('/api/ai/morning-analysis', {
         method: 'POST',
@@ -221,17 +228,19 @@ export default function CheckinPage() {
       localStorage.setItem(`momofit_morning_ai_d${day}`, JSON.stringify(ai))
       setConfetti(true)
       setTimeout(() => setConfetti(false), 2500)
-    } catch {}
+      showToast('Morning check-in saved ✨')
+    } catch { showToast('Saved, but AI analysis failed', false) }
     setSaving(false)
   }
 
   const savePost = async () => {
     setSaving(true)
-    await upsert({
+    const err = await upsert({
       rpe: form.rpe ?? null,
       workout_feeling: form.workout_feeling ?? null,
       workout_notes: form.workout_notes ?? null,
     })
+    if (err) { showToast('Save failed — check connection', false); setSaving(false); return }
     try {
       const res = await fetch('/api/ai/post-activity-analysis', {
         method: 'POST',
@@ -241,18 +250,20 @@ export default function CheckinPage() {
       const ai = (await res.json()) as PostActivityAnalysis
       setPostAI(ai)
       localStorage.setItem(`momofit_post_ai_d${day}`, JSON.stringify(ai))
-    } catch {}
+      showToast('Post-activity saved ⚡')
+    } catch { showToast('Saved, but AI analysis failed', false) }
     setSaving(false)
   }
 
   const saveEvening = async () => {
     setSaving(true)
-    await upsert({
+    const err = await upsert({
       steps: form.steps ?? null,
       calories: form.calories ?? null,
       water_liters: form.water_liters ?? null,
       nutrition_quality: form.nutrition_quality ?? null,
     })
+    if (err) { showToast('Save failed — check connection', false); setSaving(false); return }
     try {
       const res = await fetch('/api/ai/evening-analysis', {
         method: 'POST',
@@ -262,7 +273,8 @@ export default function CheckinPage() {
       const ai = (await res.json()) as EveningAnalysis
       setEveningAI(ai)
       localStorage.setItem(`momofit_evening_ai_d${day}`, JSON.stringify(ai))
-    } catch {}
+      showToast('Evening check-in saved 🌙')
+    } catch { showToast('Saved, but AI analysis failed', false) }
     setSaving(false)
   }
 
@@ -305,6 +317,13 @@ export default function CheckinPage() {
   return (
     <div className="px-4 py-6 space-y-4">
       <Confetti active={confetti} />
+
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-4 left-4 right-4 z-50 max-w-lg mx-auto px-4 py-3 rounded-2xl text-sm font-bold text-white text-center shadow-lg transition-all ${toast.ok ? 'gradient-pink' : 'bg-red-500'}`}>
+          {toast.msg}
+        </div>
+      )}
 
       {/* Header */}
       <div>
