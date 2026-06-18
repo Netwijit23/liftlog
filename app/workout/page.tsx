@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { USER_ID } from '@/lib/user'
-import ExerciseGif from '@/components/ExerciseGif'
 import { getExerciseTip } from '@/lib/exerciseTips'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -536,13 +535,6 @@ function advanceAfterRest() {
             {best1RM && !newPR && (
               <span className="text-xs text-gray-400 font-medium">PR ~{Math.round(best1RM)}kg</span>
             )}
-          </div>
-        </div>
-
-        {/* GIF demo — large, prominent */}
-        <div className="px-4 mb-2">
-          <div className="rounded-3xl overflow-hidden bg-white shadow-pink-sm" style={{ height: 210 }}>
-            <ExerciseGif name={ex.name} />
           </div>
         </div>
 
