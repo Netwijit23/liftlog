@@ -65,6 +65,8 @@ export default function WorkoutPage() {
     { name: '', defaultSets: 3, defaultReps: 10, defaultWeight: 60 },
   ])
 
+  const sessionIdRef = useRef<string>(crypto.randomUUID())
+
   const [session, setSession] = useState<{
     planId: string; planName: string; exercises: ExerciseLog[]
   } | null>(null)
@@ -154,7 +156,24 @@ export default function WorkoutPage() {
     setRestLeft(l => Math.max(1, l + delta))
   }
 
+  async function autoSave(exercises: ExerciseLog[], planId: string, planName: string) {
+    const today = new Date().toISOString().split('T')[0]
+    const sets = exercises.map(ex => ({
+      exerciseName: ex.name,
+      sets: ex.sets.filter(s => s.done).map(({ weight, reps }) => ({ weight, reps })),
+    }))
+    await supabase.from('ll_workout_logs').upsert({
+      id: sessionIdRef.current,
+      user_id: USER_ID,
+      date: today,
+      plan_id: planId === 'period' ? null : planId,
+      plan_name: planName,
+      sets,
+    }, { onConflict: 'id' })
+  }
+
   function initSession(planId: string, planName: string, exercises: ExerciseLog[]) {
+    sessionIdRef.current = crypto.randomUUID()
     setSession({ planId, planName, exercises })
     setExIdx(0); setSetIdx(0); setPhase('exercise')
     setCurWeight(String(exercises[0].sets[0].weight || ''))
@@ -216,6 +235,7 @@ export default function WorkoutPage() {
         : ex
     )
     setSession({ ...session, exercises: updated })
+    autoSave(updated, session.planId, session.planName)
 
     const exName = session.exercises[exIdx].name
     const rm = epley(w, r)
@@ -248,13 +268,8 @@ export default function WorkoutPage() {
     if (!session) return
     setSaving(true)
     const today = new Date().toISOString().split('T')[0]
-    const sets = session.exercises.map(ex => ({
-      exerciseName: ex.name,
-      sets: ex.sets.filter(s => s.done).map(({ weight, reps }) => ({ weight, reps })),
-    }))
-    const { error: logErr } = await supabase.from('ll_workout_logs').insert({
-      user_id: USER_ID, date: today, plan_id: session.planId, plan_name: session.planName, sets,
-    })
+    // Final upsert using same session row already auto-saved after each set
+    const { error: logErr } = await autoSave(session.exercises, session.planId, session.planName).then(() => ({ error: null })).catch(e => ({ error: e }))
     const { error: dailyErr } = await supabase.from('ll_daily_logs').upsert({
       user_id: USER_ID, date: today, workout_completed: true, updated_at: new Date().toISOString(),
     }, { onConflict: 'user_id,date' })
