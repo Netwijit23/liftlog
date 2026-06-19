@@ -715,13 +715,13 @@ export default function WorkoutPage() {
       {showPeriodModal && (
         <>
           <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowPeriodModal(false)} />
-          <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white rounded-t-3xl shadow-2xl overflow-y-auto" style={{ maxHeight: '92vh' }}>
+          <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white rounded-t-3xl shadow-2xl flex flex-col" style={{ maxHeight: '92vh' }}>
             {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
+            <div className="flex justify-center pt-3 pb-1 flex-shrink-0">
               <div className="w-10 h-1 rounded-full bg-gray-200" />
             </div>
 
-            <div className="px-5 pb-8 space-y-5">
+            <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-5">
               {/* Header */}
               <div className="flex items-center justify-between pt-2">
                 <div>
