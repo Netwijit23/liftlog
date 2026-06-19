@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { USER_ID } from '@/lib/user'
 import { getExerciseTip } from '@/lib/exerciseTips'
-import { ChevronLeft, X, SkipForward, Check, Ban, Plus, Minus, Trash2 } from 'lucide-react'
+import { ChevronLeft, X, SkipForward, Check, Ban, Plus, Minus, Trash2, Pencil, History, ChevronDown, ChevronUp } from 'lucide-react'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -70,9 +70,17 @@ export default function WorkoutPage() {
   const [session, setSession] = useState<{
     planId: string; planName: string; exercises: ExerciseLog[]
   } | null>(null)
+  const [sessionMode, setSessionMode] = useState<'guided' | 'cards'>('cards')
   const [exIdx, setExIdx] = useState(0)
   const [setIdx, setSetIdx] = useState(0)
   const [phase, setPhase] = useState<SessionPhase>('exercise')
+
+  // Card mode state
+  const [skipped, setSkipped] = useState<Set<number>>(new Set())
+  const [editingIdx, setEditingIdx] = useState<number | null>(null)
+  const [editName, setEditName] = useState('')
+  const [showHistory, setShowHistory] = useState<Record<number, boolean>>({})
+  const [savingEx, setSavingEx] = useState<number | null>(null)
   const [restLeft, setRestLeft] = useState(90)
   const [restTotal, setRestTotal] = useState(90)
   const [suggestedRest, setSuggestedRest] = useState(90)
@@ -156,6 +164,53 @@ export default function WorkoutPage() {
     setRestLeft(l => Math.max(1, l + delta))
   }
 
+  // ── Card mode helpers ──────────────────────────────────────────────────────
+
+  function updateSet(exI: number, setI: number, field: 'weight' | 'reps' | 'done', value: string | boolean) {
+    if (!session) return
+    const updated = session.exercises.map((ex, ei) =>
+      ei !== exI ? ex : {
+        ...ex, sets: ex.sets.map((s, si) =>
+          si !== setI ? s : { ...s, [field]: field === 'done' ? value : (value as string) }
+        )
+      }
+    )
+    setSession({ ...session, exercises: updated })
+    autoSave(updated, session.planId, session.planName)
+  }
+
+  function addSet(exI: number) {
+    if (!session) return
+    const ex = session.exercises[exI]
+    const last = ex.sets[ex.sets.length - 1] ?? { weight: 0, reps: 0, done: false }
+    const updated = session.exercises.map((e, i) =>
+      i !== exI ? e : { ...e, sets: [...e.sets, { weight: last.weight, reps: last.reps, done: false }] }
+    )
+    setSession({ ...session, exercises: updated })
+    autoSave(updated, session.planId, session.planName)
+  }
+
+  function removeSet(exI: number, setI: number) {
+    if (!session) return
+    const updated = session.exercises.map((e, i) =>
+      i !== exI ? e : { ...e, sets: e.sets.filter((_, si) => si !== setI) }
+    )
+    setSession({ ...session, exercises: updated })
+    autoSave(updated, session.planId, session.planName)
+  }
+
+  async function saveExercise(exI: number) {
+    if (!session) return
+    setSavingEx(exI)
+    await autoSave(session.exercises, session.planId, session.planName)
+    setSavingEx(null)
+  }
+
+  function epley1RM(weight: number, reps: number) {
+    if (!weight || !reps) return 0
+    return Math.round(weight * (1 + reps / 30))
+  }
+
   async function autoSave(exercises: ExerciseLog[], planId: string, planName: string) {
     const today = new Date().toISOString().split('T')[0]
     const sets = exercises.map(ex => ({
@@ -172,21 +227,25 @@ export default function WorkoutPage() {
     }, { onConflict: 'id' })
   }
 
-  function initSession(planId: string, planName: string, exercises: ExerciseLog[]) {
+  function initSession(planId: string, planName: string, exercises: ExerciseLog[], mode: 'guided' | 'cards' = 'cards') {
     sessionIdRef.current = crypto.randomUUID()
     setSession({ planId, planName, exercises })
+    setSessionMode(mode)
     setExIdx(0); setSetIdx(0); setPhase('exercise')
     setCurWeight(String(exercises[0].sets[0].weight || ''))
     setCurReps(String(exercises[0].sets[0].reps || ''))
     setNewPR(null)
+    setSkipped(new Set())
+    setEditingIdx(null)
+    setShowHistory({})
   }
 
-  function startSession(plan: WorkoutPlan) {
+  function startSession(plan: WorkoutPlan, mode: 'guided' | 'cards' = 'cards') {
     const exercises: ExerciseLog[] = plan.exercises.map(ex => ({
       id: ex.id, name: ex.name,
       sets: Array.from({ length: ex.defaultSets }, () => ({ weight: ex.defaultWeight, reps: ex.defaultReps, done: false })),
     }))
-    initSession(plan.id, plan.name, exercises)
+    initSession(plan.id, plan.name, exercises, mode)
   }
 
   function goBack() {
@@ -305,8 +364,226 @@ export default function WorkoutPage() {
   function startPeriodSession() {
     if (!periodPlan) return
     const exercises: ExerciseLog[] = periodPlan.exercises.map(ex => ({ id: crypto.randomUUID(), name: ex.name, sets: Array.from({ length: ex.sets }, () => ({ weight: ex.weight, reps: ex.reps, done: false })) }))
-    initSession('period', periodPlan.plan_name, exercises)
+    initSession('period', periodPlan.plan_name, exercises, 'cards')
     setShowPeriodModal(false); setPeriodPlan(null)
+  }
+
+  // ── Card mode view ─────────────────────────────────────────────────────────
+
+  if (session && sessionMode === 'cards') {
+    const totalSets = session.exercises.reduce((a, e) => a + e.sets.length, 0)
+    const doneSets = session.exercises.reduce((a, e) => a + e.sets.filter(s => s.done).length, 0)
+
+    return (
+      <div className="min-h-screen" style={{ background: '#F5F5F7' }}>
+        {/* Header */}
+        <div className="bg-black px-5 pt-14 pb-5">
+          <div className="flex items-center justify-between mb-3">
+            <button onClick={cancelSession} className="w-8 h-8 flex items-center justify-center rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
+              <X className="w-4 h-4 text-white/60" />
+            </button>
+            <div className="text-center">
+              <p className="text-white text-sm font-bold">{session.planName}</p>
+              <p className="text-white/40 text-[11px] mt-0.5">{doneSets}/{totalSets} sets done</p>
+            </div>
+            <button onClick={() => setSessionMode('guided')}
+              className="text-[11px] font-semibold px-3 py-1.5 rounded-xl"
+              style={{ background: 'rgba(244,114,182,0.2)', color: '#F472B6' }}>
+              Guided
+            </button>
+          </div>
+          {/* Overall progress bar */}
+          <div className="w-full h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.1)' }}>
+            <div className="h-full rounded-full transition-all" style={{ width: `${totalSets > 0 ? (doneSets / totalSets) * 100 : 0}%`, background: '#F472B6' }} />
+          </div>
+        </div>
+
+        {/* Exercise cards */}
+        <div className="px-4 py-4 space-y-3 pb-32">
+          {session.exercises.map((ex, exI) => {
+            const allDone = ex.sets.length > 0 && ex.sets.every(s => s.done)
+            const isSkipped = skipped.has(exI)
+            const isEditing = editingIdx === exI
+            const lastSession = history.find(h => h.exerciseName === ex.name)
+            const best1RM = prs[ex.name]
+            const today1RM = ex.sets
+              .filter(s => s.done && s.weight && s.reps)
+              .reduce((best, s) => Math.max(best, epley1RM(s.weight, s.reps)), 0)
+            const isShowHistory = showHistory[exI]
+
+            return (
+              <div key={ex.id} className="overflow-hidden rounded-3xl transition-opacity"
+                style={{ opacity: isSkipped ? 0.45 : 1, background: 'white', boxShadow: '0 2px 12px rgba(244,114,182,0.08)' }}>
+
+                {/* Skipped banner */}
+                {isSkipped && (
+                  <div className="flex items-center justify-between px-4 py-2 border-b" style={{ background: '#FDF2F8', borderColor: 'rgba(244,114,182,0.15)' }}>
+                    <div className="flex items-center gap-1.5">
+                      <Ban className="w-3 h-3" style={{ color: '#ACACAC' }} />
+                      <span className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: '#ACACAC' }}>Machine busy — skipped</span>
+                    </div>
+                    <button onClick={() => setSkipped(prev => { const s = new Set(prev); s.delete(exI); return s })}
+                      className="text-[11px] font-semibold" style={{ color: '#F472B6' }}>
+                      Restore
+                    </button>
+                  </div>
+                )}
+
+                {/* Card header */}
+                <div className="flex items-center justify-between px-4 py-3.5"
+                  style={allDone ? { background: '#0A0A0A' } : {}}>
+                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                    {/* Check circle */}
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ background: allDone ? 'rgba(255,255,255,0.15)' : '#F5F5F7' }}>
+                      {allDone
+                        ? <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                        : <span className="text-[11px] font-bold" style={{ color: '#ACACAC' }}>{exI + 1}</span>}
+                    </div>
+                    {/* Name / edit */}
+                    {isEditing ? (
+                      <div className="flex items-center gap-2 flex-1">
+                        <input value={editName} onChange={e => setEditName(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              const updated = session.exercises.map((ex2, i) => i === exI ? { ...ex2, name: editName } : ex2)
+                              setSession({ ...session, exercises: updated })
+                              setEditingIdx(null)
+                            }
+                          }}
+                          autoFocus
+                          className="flex-1 text-sm font-semibold border-b focus:outline-none bg-transparent"
+                          style={{ color: allDone ? 'white' : '#0A0A0A', borderColor: allDone ? 'rgba(255,255,255,0.3)' : '#0A0A0A' }} />
+                        <button onClick={() => {
+                          const updated = session.exercises.map((ex2, i) => i === exI ? { ...ex2, name: editName } : ex2)
+                          setSession({ ...session, exercises: updated })
+                          setEditingIdx(null)
+                        }} style={{ color: allDone ? 'rgba(255,255,255,0.6)' : '#0A0A0A' }}>
+                          <Check className="w-4 h-4" />
+                        </button>
+                        <button onClick={() => setEditingIdx(null)} style={{ color: '#ACACAC' }}>
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: allDone ? 'white' : '#0A0A0A' }}>{ex.name}</p>
+                        {best1RM && !allDone && (
+                          <p className="text-[10px] mt-0.5" style={{ color: '#F472B6' }}>PR: ~{Math.round(best1RM)} kg 1RM</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  {!isEditing && (
+                    <div className="flex items-center gap-1.5 ml-2 flex-shrink-0">
+                      <button onClick={() => setSkipped(prev => { const s = new Set(prev); isSkipped ? s.delete(exI) : s.add(exI); return s })}
+                        className="w-7 h-7 flex items-center justify-center rounded-xl"
+                        style={{ background: allDone ? 'rgba(255,255,255,0.1)' : '#F5F5F7' }}>
+                        <Ban className="w-3 h-3" style={{ color: allDone ? 'rgba(255,255,255,0.4)' : '#ACACAC' }} />
+                      </button>
+                      <button onClick={() => { setEditingIdx(exI); setEditName(ex.name) }}
+                        className="w-7 h-7 flex items-center justify-center rounded-xl"
+                        style={{ background: allDone ? 'rgba(255,255,255,0.1)' : '#F5F5F7' }}>
+                        <Pencil className="w-3 h-3" style={{ color: allDone ? 'rgba(255,255,255,0.4)' : '#ACACAC' }} />
+                      </button>
+                      <button onClick={() => saveExercise(exI)} disabled={savingEx === exI}
+                        className="text-xs font-semibold px-3 py-1.5 rounded-xl transition disabled:opacity-40"
+                        style={{ background: allDone ? 'rgba(255,255,255,0.15)' : '#F5F5F7', color: allDone ? 'white' : '#0A0A0A' }}>
+                        {savingEx === exI ? '…' : 'Save'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Set rows */}
+                <div className="px-4 pb-4 pt-2">
+                  <div className="flex items-center mb-2 gap-2" style={{ color: '#ACACAC' }}>
+                    <span className="w-6 text-[10px] font-semibold uppercase tracking-wider">#</span>
+                    <span className="flex-1 text-center text-[10px] font-semibold uppercase tracking-wider">KG</span>
+                    <span className="flex-1 text-center text-[10px] font-semibold uppercase tracking-wider">Reps</span>
+                    <span className="w-7 text-center text-[10px] font-semibold uppercase tracking-wider">✓</span>
+                    <span className="w-5" />
+                  </div>
+
+                  {ex.sets.map((set, setI) => (
+                    <div key={setI} className="flex items-center gap-2 mb-2">
+                      <span className="w-6 text-xs font-bold" style={{ color: set.done ? '#0A0A0A' : '#D1D1D6' }}>{setI + 1}</span>
+                      <input type="number" inputMode="decimal" placeholder="—"
+                        value={set.weight || ''}
+                        onChange={e => updateSet(exI, setI, 'weight', e.target.value)}
+                        className="flex-1 rounded-xl px-2 py-2 text-sm font-semibold text-center focus:outline-none"
+                        style={{ background: set.done ? '#0A0A0A' : '#F5F5F7', color: set.done ? 'white' : '#0A0A0A' }} />
+                      <input type="number" inputMode="numeric" placeholder="—"
+                        value={set.reps || ''}
+                        onChange={e => updateSet(exI, setI, 'reps', e.target.value)}
+                        className="flex-1 rounded-xl px-2 py-2 text-sm font-semibold text-center focus:outline-none"
+                        style={{ background: set.done ? '#0A0A0A' : '#F5F5F7', color: set.done ? 'white' : '#0A0A0A' }} />
+                      <button onClick={() => updateSet(exI, setI, 'done', !set.done)}
+                        className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 transition-all"
+                        style={{ background: set.done ? '#F472B6' : '#F5F5F7' }}>
+                        {set.done && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                      </button>
+                      <button onClick={() => removeSet(exI, setI)} className="w-5 flex items-center justify-center" style={{ color: '#D1D1D6' }}>
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {/* Footer: add set + 1RM + history */}
+                  <div className="flex items-center justify-between mt-2">
+                    <button onClick={() => addSet(exI)} className="text-xs font-medium" style={{ color: '#ACACAC' }}>
+                      + Add set
+                    </button>
+                    <div className="flex items-center gap-3">
+                      {today1RM > 0 && (
+                        <span className="text-[10px] font-semibold" style={{ color: '#F472B6' }}>~{today1RM} kg 1RM</span>
+                      )}
+                      {lastSession && (
+                        <button onClick={() => setShowHistory(p => ({ ...p, [exI]: !p[exI] }))}
+                          className="flex items-center gap-1 text-[10px] font-medium" style={{ color: '#ACACAC' }}>
+                          <History className="w-3 h-3" />
+                          History
+                          {isShowHistory ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* History panel */}
+                  {isShowHistory && lastSession && (
+                    <div className="mt-3 pt-3 border-t" style={{ borderColor: '#F5F5F7' }}>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: '#ACACAC' }}>Last session</p>
+                      <div className="flex flex-wrap gap-2">
+                        {lastSession.sets.map((s, i) => (
+                          <span key={i} className="text-xs font-bold px-3 py-1 rounded-full"
+                            style={{ background: 'rgba(244,114,182,0.08)', color: '#DB2777', border: '1px solid rgba(244,114,182,0.15)' }}>
+                            {s.weight}kg × {s.reps}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Sticky finish button */}
+        <div className="fixed bottom-0 left-0 right-0 max-w-lg mx-auto px-4 pb-safe" style={{ paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom,0px) + 64px)', background: 'linear-gradient(to top, #F5F5F7 60%, transparent)' }}>
+          {saveError && (
+            <div className="mb-2 px-4 py-2.5 rounded-2xl text-sm text-center" style={{ background: 'rgba(239,68,68,0.1)', color: '#ef4444' }}>{saveError}</div>
+          )}
+          <button onClick={() => { setSaveError(null); saveWorkout() }} disabled={saving || saveSuccess}
+            className="w-full text-white font-bold text-sm py-4 rounded-2xl active:scale-[0.98] transition-all disabled:opacity-60"
+            style={{ background: 'linear-gradient(135deg,#F472B6,#DB2777)', boxShadow: '0 8px 24px rgba(244,114,182,0.35)' }}>
+            {saving ? 'Saving…' : saveSuccess ? '✓ Saved! Great work 💪' : `Finish Workout · ${doneSets}/${totalSets} sets`}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   // ── Active session ─────────────────────────────────────────────────────────
@@ -668,11 +945,18 @@ export default function WorkoutPage() {
               </span>
             ))}
           </div>
-          <button onClick={() => startSession(plan)}
-            className="w-full text-white font-bold text-sm py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
-            style={{ background: 'linear-gradient(135deg, #F472B6, #DB2777)', boxShadow: '0 4px 16px rgba(244,114,182,0.3)' }}>
-            Start Session →
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => startSession(plan, 'cards')}
+              className="flex-1 text-white font-bold text-sm py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+              style={{ background: 'linear-gradient(135deg, #F472B6, #DB2777)', boxShadow: '0 4px 16px rgba(244,114,182,0.3)' }}>
+              📋 Log Sets
+            </button>
+            <button onClick={() => startSession(plan, 'guided')}
+              className="font-bold text-sm px-4 py-3.5 rounded-2xl active:scale-[0.98] transition-transform"
+              style={{ background: '#F5F5F7', color: '#0A0A0A' }}>
+              ▶ Guided
+            </button>
+          </div>
         </div>
       ))}
 
