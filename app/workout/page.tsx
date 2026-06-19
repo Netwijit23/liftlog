@@ -203,6 +203,10 @@ export default function WorkoutPage() {
 
   // Period mode
   const [showPeriodModal, setShowPeriodModal] = useState(false)
+  useEffect(() => {
+    document.body.style.overflow = showPeriodModal ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [showPeriodModal])
   const [periodForm, setPeriodForm] = useState({ cramps: 2, energy: 3, bloating: 2, mood: 3, backPain: 'no', available: '45' })
   const [periodLoading, setPeriodLoading] = useState(false)
   const [periodPlan, setPeriodPlan] = useState<{ message: string; plan_name: string; intensity: string; exercises: { name: string; sets: number; reps: number; weight: number; note?: string }[] } | null>(null)
