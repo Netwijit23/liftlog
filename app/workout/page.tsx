@@ -725,7 +725,7 @@ export default function WorkoutPage() {
               <div className="w-10 h-1 rounded-full bg-gray-200" />
             </div>
 
-            <div className="overflow-y-auto flex-1 px-5 pb-8 space-y-5">
+            <div className="overflow-y-auto flex-1 px-5 space-y-5" style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(2rem + env(safe-area-inset-bottom, 20px) + 80px)' }}>
               {/* Header */}
               <div className="flex items-center justify-between pt-2">
                 <div>
