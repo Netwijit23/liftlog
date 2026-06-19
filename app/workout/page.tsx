@@ -201,6 +201,12 @@ export default function WorkoutPage() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
+  // Period mode
+  const [showPeriodModal, setShowPeriodModal] = useState(false)
+  const [periodForm, setPeriodForm] = useState({ cramps: 2, energy: 3, bloating: 2, mood: 3, backPain: 'no', available: '45' })
+  const [periodLoading, setPeriodLoading] = useState(false)
+  const [periodPlan, setPeriodPlan] = useState<{ message: string; plan_name: string; intensity: string; exercises: { name: string; sets: number; reps: number; weight: number; note?: string }[] } | null>(null)
+
   const loadPlans = useCallback(async () => {
     const { data } = await supabase.from('ll_workout_plans').select('*').eq('user_id', USER_ID).order('created_at')
     if (data) setPlans(data as WorkoutPlan[])
@@ -269,7 +275,45 @@ export default function WorkoutPage() {
     initSession(plan.id, plan.name, exercises)
   }
 
-function advanceAfterRest() {
+  async function generatePeriodPlan() {
+    setPeriodLoading(true)
+    setPeriodPlan(null)
+    try {
+      const res = await fetch('/api/ai/period-workout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(periodForm),
+      })
+      const data = await res.json()
+      setPeriodPlan(data)
+    } catch {
+      setPeriodPlan({
+        message: "You showed up and that's everything 💕 Here's something gentle for today.",
+        plan_name: 'Gentle Period Flow',
+        intensity: 'gentle',
+        exercises: [
+          { name: 'Lat Pulldown', sets: 2, reps: 12, weight: 10, note: 'Light, seated' },
+          { name: 'Dumbbell Shoulder Press', sets: 2, reps: 12, weight: 5 },
+          { name: 'Dead Bug', sets: 2, reps: 10, weight: 0, note: 'Gentle core' },
+        ],
+      })
+    }
+    setPeriodLoading(false)
+  }
+
+  function startPeriodSession() {
+    if (!periodPlan) return
+    const exercises: ExerciseLog[] = periodPlan.exercises.map((ex) => ({
+      id: crypto.randomUUID(),
+      name: ex.name,
+      sets: Array.from({ length: ex.sets }, () => ({ weight: ex.weight, reps: ex.reps, done: false })),
+    }))
+    initSession('period', periodPlan.plan_name, exercises)
+    setShowPeriodModal(false)
+    setPeriodPlan(null)
+  }
+
+  function advanceAfterRest() {
     if (restRef.current) clearInterval(restRef.current)
     setPhase('exercise')
   }
@@ -651,6 +695,191 @@ function advanceAfterRest() {
           + New Plan
         </button>
       </div>
+
+      {/* Period mode button */}
+      <button
+        onClick={() => { setShowPeriodModal(true); setPeriodPlan(null) }}
+        className="w-full flex items-center gap-3 bg-white border-2 border-pink-100 rounded-3xl px-5 py-4 active:scale-95 transition-transform shadow-pink-sm"
+      >
+        <span className="text-2xl">🌸</span>
+        <div className="text-left flex-1">
+          <p className="font-bold text-gray-800 text-sm">I&apos;m on my period</p>
+          <p className="text-xs text-gray-400">Get an AI-adapted workout for how you feel today</p>
+        </div>
+        <svg viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 text-pink-300">
+          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd"/>
+        </svg>
+      </button>
+
+      {/* Period mode modal */}
+      {showPeriodModal && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm" onClick={() => setShowPeriodModal(false)} />
+          <div className="fixed bottom-0 left-0 right-0 z-50 max-w-lg mx-auto bg-white rounded-t-3xl shadow-2xl overflow-y-auto" style={{ maxHeight: '92vh' }}>
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 rounded-full bg-gray-200" />
+            </div>
+
+            <div className="px-5 pb-8 space-y-5">
+              {/* Header */}
+              <div className="flex items-center justify-between pt-2">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">🌸 Period Check-In</h2>
+                  <p className="text-sm text-gray-400 mt-0.5">Tell me how you&apos;re feeling today</p>
+                </div>
+                <button onClick={() => setShowPeriodModal(false)} className="text-gray-300 text-2xl font-light">✕</button>
+              </div>
+
+              {!periodPlan ? (
+                <>
+                  {/* Cramps */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-bold text-gray-700">Cramps</label>
+                      <span className="text-sm font-bold text-pink-500">
+                        {['', 'None 😊', 'Mild 🙂', 'Moderate 😣', 'Ugh 😖', 'Severe 😵'][periodForm.cramps]}
+                      </span>
+                    </div>
+                    <input type="range" min={1} max={5} value={periodForm.cramps}
+                      onChange={e => setPeriodForm(f => ({ ...f, cramps: +e.target.value }))}
+                      className="w-full" />
+                    <div className="flex justify-between text-[10px] text-gray-300 mt-0.5"><span>None</span><span>Severe</span></div>
+                  </div>
+
+                  {/* Energy */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-bold text-gray-700">Energy Level</label>
+                      <span className="text-sm font-bold text-pink-500">
+                        {['', 'Drained 🪫', 'Low ⬇️', 'Okay 😐', 'Decent 🙂', 'Normal ⚡'][periodForm.energy]}
+                      </span>
+                    </div>
+                    <input type="range" min={1} max={5} value={periodForm.energy}
+                      onChange={e => setPeriodForm(f => ({ ...f, energy: +e.target.value }))}
+                      className="w-full" />
+                    <div className="flex justify-between text-[10px] text-gray-300 mt-0.5"><span>Drained</span><span>Normal</span></div>
+                  </div>
+
+                  {/* Bloating */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-bold text-gray-700">Bloating</label>
+                      <span className="text-sm font-bold text-pink-500">
+                        {['', 'None 😊', 'A little 🙂', 'Noticeable 😐', 'A lot 😮‍💨', 'Very bloated 🎈'][periodForm.bloating]}
+                      </span>
+                    </div>
+                    <input type="range" min={1} max={5} value={periodForm.bloating}
+                      onChange={e => setPeriodForm(f => ({ ...f, bloating: +e.target.value }))}
+                      className="w-full" />
+                    <div className="flex justify-between text-[10px] text-gray-300 mt-0.5"><span>None</span><span>Very bloated</span></div>
+                  </div>
+
+                  {/* Mood */}
+                  <div>
+                    <div className="flex justify-between mb-2">
+                      <label className="text-sm font-bold text-gray-700">Mood</label>
+                      <span className="text-sm font-bold text-pink-500">
+                        {['', 'Awful 😤', 'Low 😔', 'Meh 😐', 'Okay 🙂', 'Good 😊'][periodForm.mood]}
+                      </span>
+                    </div>
+                    <input type="range" min={1} max={5} value={periodForm.mood}
+                      onChange={e => setPeriodForm(f => ({ ...f, mood: +e.target.value }))}
+                      className="w-full" />
+                    <div className="flex justify-between text-[10px] text-gray-300 mt-0.5"><span>Awful</span><span>Good</span></div>
+                  </div>
+
+                  {/* Back pain */}
+                  <div>
+                    <label className="text-sm font-bold text-gray-700 block mb-2">Lower back pain?</label>
+                    <div className="flex gap-3">
+                      {['no', 'yes'].map(v => (
+                        <button key={v} onClick={() => setPeriodForm(f => ({ ...f, backPain: v }))}
+                          className={`flex-1 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 ${periodForm.backPain === v ? 'gradient-pink text-white shadow-pink-sm' : 'bg-blush-50 text-gray-600 border border-blush-200'}`}>
+                          {v === 'no' ? '✅ No' : '😣 Yes'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Time available */}
+                  <div>
+                    <label className="text-sm font-bold text-gray-700 block mb-2">Time available</label>
+                    <div className="flex gap-2">
+                      {['20', '30', '45', '60'].map(t => (
+                        <button key={t} onClick={() => setPeriodForm(f => ({ ...f, available: t }))}
+                          className={`flex-1 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 ${periodForm.available === t ? 'gradient-pink text-white shadow-pink-sm' : 'bg-blush-50 text-gray-600 border border-blush-200'}`}>
+                          {t}m
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={generatePeriodPlan}
+                    disabled={periodLoading}
+                    className="w-full gradient-pink text-white font-bold py-4 rounded-3xl shadow-pink-md active:scale-95 transition-transform disabled:opacity-60"
+                  >
+                    {periodLoading ? '✨ Creating your plan…' : '✨ Generate My Plan'}
+                  </button>
+                </>
+              ) : (
+                /* AI Result */
+                <div className="space-y-4">
+                  {/* Intensity badge */}
+                  <div className="flex items-center gap-2">
+                    <span className={`px-3 py-1 rounded-full text-xs font-bold text-white ${
+                      periodPlan.intensity === 'rest' ? 'bg-purple-400' :
+                      periodPlan.intensity === 'gentle' ? 'bg-blue-400' :
+                      periodPlan.intensity === 'moderate' ? 'bg-amber-400' : 'gradient-pink'
+                    }`}>
+                      {periodPlan.intensity === 'rest' ? '🛋️ Rest Day' :
+                       periodPlan.intensity === 'gentle' ? '🌸 Gentle' :
+                       periodPlan.intensity === 'moderate' ? '🙂 Moderate' : '💪 Normal'}
+                    </span>
+                  </div>
+
+                  {/* Coach message */}
+                  <div className="bg-blush-50 rounded-2xl p-4 border border-pink-100">
+                    <p className="text-sm text-gray-700 leading-relaxed">{periodPlan.message}</p>
+                  </div>
+
+                  {/* Plan name */}
+                  <p className="font-bold text-gray-900 text-lg">{periodPlan.plan_name}</p>
+
+                  {/* Exercise list */}
+                  <div className="space-y-2">
+                    {periodPlan.exercises.map((ex, i) => (
+                      <div key={i} className="card-luxury px-4 py-3 flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <p className="font-bold text-gray-800 text-sm">{ex.name}</p>
+                          {ex.note && <p className="text-xs text-gray-400 mt-0.5">{ex.note}</p>}
+                        </div>
+                        <span className="text-xs font-bold text-pink-500 bg-blush-50 px-2.5 py-1 rounded-full whitespace-nowrap">
+                          {ex.sets}×{ex.reps}{ex.weight > 0 ? ` · ${ex.weight}kg` : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={startPeriodSession}
+                    className="w-full gradient-pink text-white font-bold py-4 rounded-3xl shadow-pink-md active:scale-95 transition-transform"
+                  >
+                    Start This Workout 🌸
+                  </button>
+                  <button
+                    onClick={() => setPeriodPlan(null)}
+                    className="w-full text-gray-400 text-sm font-semibold py-2"
+                  >
+                    ← Adjust answers
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
 
       {plans.length === 0 && !showNewPlan && (
         <div className="bg-white rounded-3xl p-8 shadow-pink-sm text-center space-y-3">
